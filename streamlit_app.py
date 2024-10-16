@@ -4,10 +4,10 @@ import pandas as pd
 import plotly.express as px
 
 # Twitter API credentials (replace with actual values)
-consumer_key = "3NUGUPxsZygy2z4953wut2avu"
-consumer_secret = "ZW5LSZnaj5PZJpQ2ZWs2335kXyz9QeNPIwpfmmUtaAWKpXuqa9"
-access_token = "280890341-MgNWHw6odsNaxH1lh3GFZuLcwRQOxp4jzpaE6UmW"
-access_token_secret = "YFRzZVrYHvc9ex4VF7f9voRGnEA9I0hT61lRAvVwME4wZ"
+consumer_key = "YOUR_TWITTER_CONSUMER_KEY"
+consumer_secret = "YOUR_TWITTER_CONSUMER_SECRET"
+access_token = "YOUR_TWITTER_ACCESS_TOKEN"
+access_token_secret = "YOUR_TWITTER_ACCESS_TOKEN_SECRET"
 
 # Authenticate with Twitter (assuming credentials are configured in Streamlit Secrets)
 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
@@ -25,10 +25,11 @@ def get_followers_locations(username):
         locations = [follower.location for follower in followers if follower.location]
         return pd.DataFrame(locations, columns=['Location']), None
     except tweepy.TweepError as e:
-        if 'User not found' in str(e):
+        if 'Rate limit exceeded' in str(e):
+            time.sleep(60 * 15)  # Wait for 15 minutes before retrying
+            return get_followers_locations(username)  # Retry the function
+        elif 'User not found' in str(e):
             return None, "Error: User not found. Please check the username and try again."
-        elif 'Rate limit exceeded' in str(e):
-            return None, "Error: Twitter API rate limit exceeded. Please try again later."
         else:
             return None, f"An unexpected error occurred: {str(e)}"
 
